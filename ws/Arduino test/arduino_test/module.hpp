@@ -285,7 +285,7 @@ class Ultrasonic {
 
     // 壁との距離を返す関数
     // 戻り値はの単位はcm
-    int distance() {
+    double distance() {
         digitalWrite(trig_pin, HIGH);
         delayMicroseconds(10);
         digitalWrite(trig_pin, LOW);
