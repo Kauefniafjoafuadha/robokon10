@@ -35,18 +35,18 @@ class Undercarriage {
           _VM_R_pin5(VM_R_pin5), _startstop_L_pin11(startstop_L_pin11),
           _runbreak_L_pin10(runbreak_L_pin11), _fwdrev_L_pin9(fwdrev_L_pin9),
           _VM_L_pin5(VM_L_pin5) {
-        pinMode(_startstop_R_pin11, OUTPUT);
-        pinMode(_runbreak_R_pin10, OUTPUT);
-        pinMode(_fwdrev_R_pin9, OUTPUT);
-        pinMode(_VM_R_pin5, OUTPUT);
-        pinMode(_startstop_L_pin11, OUTPUT);
-        pinMode(_runbreak_L_pin10, OUTPUT);
-        pinMode(_fwdrev_L_pin9, OUTPUT);
-        pinMode(_VM_L_pin5, OUTPUT);
-        digitalWrite(_startstop_R_pin11, HIGH);
-        digitalWrite(_runbreak_R_pin10, HIGH);
-        digitalWrite(_startstop_L_pin11, HIGH);
-        digitalWrite(_runbreak_L_pin10, HIGH);
+        // pinMode(_startstop_R_pin11, OUTPUT);
+        // pinMode(_runbreak_R_pin10, OUTPUT);
+        // pinMode(_fwdrev_R_pin9, OUTPUT);
+        // pinMode(_VM_R_pin5, OUTPUT);
+        // pinMode(_startstop_L_pin11, OUTPUT);
+        // pinMode(_runbreak_L_pin10, OUTPUT);
+        // pinMode(_fwdrev_L_pin9, OUTPUT);
+        // pinMode(_VM_L_pin5, OUTPUT);
+        // digitalWrite(_startstop_R_pin11, HIGH);
+        // digitalWrite(_runbreak_R_pin10, HIGH);
+        // digitalWrite(_startstop_L_pin11, HIGH);
+        // digitalWrite(_runbreak_L_pin10, HIGH);
     }
     // 右モーターを回す関数
     // dutyの0~255が0~3000rpmの回転速度に対応する。
@@ -58,8 +58,8 @@ class Undercarriage {
             digitalWrite(_fwdrev_R_pin9, LOW);
         }
         analogWrite(_VM_R_pin5, duty);
-        digitalWrite(_startstop_R_pin11, HIGH);
-        digitalWrite(_runbreak_R_pin10, HIGH);
+        digitalWrite(_startstop_R_pin11, LOW);
+        digitalWrite(_runbreak_R_pin10, LOW);
     }
     // 左モーターを回す関数
     // dutyの0~255が0~3000rpmの回転速度に対応する。
@@ -71,8 +71,8 @@ class Undercarriage {
             digitalWrite(_fwdrev_L_pin9, HIGH);
         }
         analogWrite(_VM_L_pin5, duty);
-        digitalWrite(_startstop_L_pin11, HIGH);
-        digitalWrite(_runbreak_L_pin10, HIGH);
+        digitalWrite(_startstop_L_pin11, LOW);
+        digitalWrite(_runbreak_L_pin10, LOW);
     }
     // 機体を前進または後退させる関数
     // dutyで速度を設定
@@ -109,7 +109,8 @@ class Undercarriage {
 
 // ロボットアームの制御を行うクラス
 class Arm {
-    privete : Servo Rservo;
+  private:
+    Servo Rservo;
     Servo Lservo;
     const int _Rpin;
     const int _Lpin;
@@ -121,76 +122,51 @@ class Arm {
     Arm(int Rpin, int Lpin, int up_angle, int down_angle)
         : _Rpin(Rpin), _Lpin(Lpin), _up_angle(up_angle),
           _down_angle(down_angle) {
-        Rservo.attach(_Rpin, 500, 2400);
-        Lservo.attach(_Lpin, 500, 2400);
+        Rservo.attach(_Rpin, 500, 2500);
+        Lservo.attach(_Lpin, 500, 2500);
     }
     // アームを上げる関数
     void lift() {
         Rservo.write(_up_angle);
-        Lservo.write(_up_angle);
+        Lservo.write(180 - _up_angle);
     }
 
     // アームを下げる関数
     void unload() {
         Rservo.write(_down_angle);
-        Lservo.write(_down_angle);
+        Lservo.write(180 - _down_angle);
     }
 };
 
 // ロボットハンドの制御を行うクラス
 class Hand {
   private:
-    const int _R1_pin;
-    const int _R2_pin;
-    const int _R3_pin;
-    const int _R4_pin;
-    const int _L1_pin;
-    const int _L2_pin;
-    const int _L3_pin;
-    const int _L4_pin;
-    int _MOTOR_STEPS; // １回転あたりのステップ数
-    int _rpm;         // １分あたりの回転数
-    int _step;        // ハンドを開閉するのに必要なstep数
+    Servo Rservo;
+    Servo Lservo;
+    const int _Rpin;
+    const int _Lpin;
+    int _opened_angle;
+    int _closed_angle;
 
   public:
     // コンストラクタ
-    Hand(int R1_pin, int R2_pin, int R3_pin, int R4_pin, int L1_pin, int L2_pin,
-         int L3_pin, int L4_pin, int MOTOR_STEP, int rpm, int step)
-        : _R1_pin(R1_pin), _R2_pin(R2_pin), _R3_pin(R3_pin), _R4_pin(R4_pin),
-          _L1_pin(_L1_pin), _L2_pin(L2_pin), _L3_pin(L3_pin), _L4_pin(L4_pin),
-          _MOTOR_STEPS(MOTOR_STEP), _rpm(rpm), _step(step) {
-        Stepper Rstepper(_MOTOR_STEPS, _R1_pin, _R2_pin, _R3_pin, _R4_pin);
-        Stepper Lstepper(_MOTOR_STEPS, _L1_pin, _L2_pin, _L3_pin, _L4_pin);
-        Rstepper.setSpeed(_rpm);
-        Lstepper.setSpeed(_rpm);
+    Hand(int Rpin, int Lpin, int opened_angle, int closed_angle)
+        : _Rpin(Rpin), _Lpin(Lpin), _opened_angle(opened_angle),
+          _closed_angle(closed_angle) {
+        Rservo.attach(_Rpin, 500, 2500);
+        Lservo.attach(_Lpin, 500, 2500);
     }
 
-    // つかむ関数
-    void catch () {
-        Rstepper.step(_step);
-        Lstepper.step(_step);
-        digitalWrite(_R1_pin, LOW);
-        digitalWrite(_R2_pin, LOW);
-        digitalWrite(_R3_pin, LOW);
-        digitalWrite(_R4_pin, LOW);
-        digitalWrite(_L1_pin, LOW);
-        digitalWrite(_L2_pin, LOW);
-        digitalWrite(_L3_pin, LOW);
-        digitalWrite(_L4_pin, LOW);
+    // 掴む関数
+    void catching() {
+        Rservo.write(_opened_angle);
+        Lservo.write(_opened_angle);
     }
 
     // 放す関数
-    void release {
-        Rstepper.step(step * (-1));
-        Lstepper.step(step * (-1));
-        digitalWrite(_R1_pin, LOW);
-        digitalWrite(_R2_pin, LOW);
-        digitalWrite(_R3_pin, LOW);
-        digitalWrite(_R4_pin, LOW);
-        digitalWrite(_L1_pin, LOW);
-        digitalWrite(_L2_pin, LOW);
-        digitalWrite(_L3_pin, LOW);
-        digitalWrite(_L4_pin, LOW);
+    void release() {
+        Rservo.write(_closed_angle);
+        Lservo.write(_closed_angle);
     }
 };
 
@@ -204,14 +180,16 @@ class Conveyor {
     int _MOTOR_STEPS; // １回転あたりのステップ数
     int _rpm;         // １分あたりの回転数
     int _step; // ベルトコンベアでものを落としきるのに必要なステップ数
+    Stepper stepper;
+
   public:
     // コンストラクタ
     Conveyor(int pin1, int pin2, int pin3, int pin4, int MOTOR_STEPS, int rpm,
              int step)
         : _pin1(pin1), _pin2(pin2), _pin3(pin3), _pin4(pin4),
-          _MOTOR_STEPS(MOTOR_STEPS), _rpm(rpm), _step(step) {
-        Stepper stepper(_MOTOR_STEPS, _pin1, _pin2, _pin3, _pin4);
-        stepper.setpeed(_rpm)
+          _MOTOR_STEPS(MOTOR_STEPS), _rpm(rpm), _step(step),
+          stepper(_MOTOR_STEPS, _pin1, _pin2, _pin3, _pin4) {
+        stepper.setSpeed(_rpm);
     }
 
     // ベルトコンベアからものを落とす関数
@@ -224,72 +202,42 @@ class Conveyor {
     }
 };
 
-// フォトリフレクタの制御を行うクラス
-class Photo {
-  private:
-    int _front_pin;
-    int _back_pin;
-    int _left_pin;
-    int _right_pin;
-    int _boundary; // 白と黒の境界を表す数値。これより値が小さいと黒と認識する。
-  public:
-    // コンストラクタ
-    Photo(int front_pin, int back_pin, int left_pin, int right_pin,
-          int boundary)
-        : _front_pin(front_pin), _back_pin(back_pin), _left_pin(left_pin),
-          _right_pin(right_pin), _boundary(boundary) {}
-    // フォトリフレクタが検知している情報を受け取る関数
-    // 黒を検知すると1を返し、それ以外を検知すると0を返す。
-    int detect(int pin) {
-        int val = analogRead(pin);
-        if (val <= _boundary) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    // 地面のラインの模様を読み取る関数
-    // 以下戻り値
-    // 0:条件に当てはまらない模様の検出
-    // 1:すべてがラインを認識しなかった
-    // 2:十字を認識
-    int detet_pattern() {
-        int front = detect(_front_pin);
-        int back = detect(_back_pin);
-        int left = detect(_left_pin);
-        int right = detect(_right_pin);
-        // ここから下に読み取りたい模様を受け取ると特定の数字を返す文を追加すること
-        if (front + back + left + right == 0) {
-            return 1;
-        } else if (front + back + left + right == 4) {
-            return 2;
-        }
-
-        return 0;
-    };
-};
-
 // 超音波センサーの制御を行うクラス
 class Ultrasonic {
   private:
-    int _trig_pin;
-    int _echo_pin;
+    int _front_trig_pin;
+    int _front_echo_pin;
+    int _back_trig_pin;
+    int _back_echo_pin;
 
   public:
-    Ultrasonic(int trig_pin, int echo_pin)
-        : _trig_pin(trig_pin), _echo_pin(echo_pin) {
-        pinMode(_echo_pin, INPUT);
-        pinMode(_trig_pin, OUTPUT);
+    Ultrasonic(int front_trig_pin, int front_echo_pin, int back_trig_pin,
+               int back_echo_pin)
+        : _front_trig_pin(front_trig_pin), _front_echo_pin(front_echo_pin),
+          _back_trig_pin(back_trig_pin), _back_echo_pin(back_echo_pin) {
+        pinMode(_front_echo_pin, INPUT);
+        pinMode(_front_trig_pin, OUTPUT);
+        pinMode(_back_echo_pin, INPUT);
+        pinMode(_back_trig_pin, OUTPUT);
     }
 
-    // 壁との距離を返す関数
+    // 前方の障害物との距離を返す関数
     // 戻り値はの単位はcm
-    double distance() {
-        digitalWrite(trig_pin, HIGH);
+    double front_distance() {
+        digitalWrite(_front_trig_pin, HIGH);
         delayMicroseconds(10);
-        digitalWrite(trig_pin, LOW);
-        duration = pulseIn(echo_pin, HIGH);
+        digitalWrite(_front_trig_pin, LOW);
+        double duration = pulseIn(_front_echo_pin, HIGH);
+        return duration * 340 * 100 / 1000000 / 2;
+    }
+
+    // 後方の障害物との距離を返す関数
+    // 戻り値はの単位はcm
+    double back_distance() {
+        digitalWrite(_back_trig_pin, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(_back_trig_pin, LOW);
+        double duration = pulseIn(_back_echo_pin, HIGH);
         return duration * 340 * 100 / 1000000 / 2;
     }
 };
