@@ -160,13 +160,13 @@ class Hand {
     // 掴む関数
     void catching() {
         Rservo.write(_opened_angle);
-        Lservo.write(_opened_angle);
+        Lservo.write(_opened_angle + 25);
     }
 
     // 放す関数
     void release() {
         Rservo.write(_closed_angle);
-        Lservo.write(_closed_angle);
+        Lservo.write(_closed_angle + 25);
     }
 };
 
